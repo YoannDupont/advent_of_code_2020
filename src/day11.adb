@@ -54,7 +54,7 @@ procedure Day11 is
             for J in buffer'Range loop
                 G(I, J) := To_State(buffer(J));
             end loop;
-            if TIO.End_Of_File(F) then
+            if TIO.End_Of_Line(F) then
                 TIO.Skip_Line(F);
             end if;
         end loop;
