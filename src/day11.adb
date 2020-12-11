@@ -135,7 +135,7 @@ procedure Day11 is
         return count;
     end Occupied_Seats;
 
-    function Equilibirum_Occupation(
+    function Equilibirum_Occupancy(
         G : in Grid;
         Count_Neighbours : access function(G : in Grid; x,y : Positive) return Natural;
         tolerance : in Natural
@@ -149,7 +149,7 @@ procedure Day11 is
             current := nxt;
         end loop;
         return Occupied_Seats(current);
-    end Equilibirum_Occupation;
+    end Equilibirum_Occupancy;
 
     filepath : constant String := Ada.Command_Line.Argument(1);
     F : TIO.File_Type;
@@ -157,8 +157,8 @@ begin
     TIO.Open(F, TIO.In_File, filepath);
     declare
         G : constant Grid := Get(F);
-        p1 : constant Natural := Equilibirum_Occupation(G, Part_1'Access, 4);
-        p2 : constant Natural := Equilibirum_Occupation(G, Part_2'Access, 5);
+        p1 : constant Natural := Equilibirum_Occupancy(G, Part_1'Access, 4);
+        p2 : constant Natural := Equilibirum_Occupancy(G, Part_2'Access, 5);
     begin
         TIO.Put_Line("How many seats end up occupied?");
         TIO.Put_Line(p1'Img);
