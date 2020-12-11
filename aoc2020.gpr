@@ -21,5 +21,6 @@ project AOC2020 is
 
     for main use
       ("day01.adb", "day02.adb", "day03.adb", "day04.adb", "day05.adb",
-       "day06.adb", "day07.adb", "day08.adb", "day09.adb");
+       "day06.adb", "day07.adb", "day08.adb", "day09.adb", "day10.adb",
+       "day11.adb");
 end AOC2020;
