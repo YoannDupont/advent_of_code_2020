@@ -1,7 +1,6 @@
 with Ada.Text_IO;
 with Ada.Containers.Ordered_Maps;
 with Ada.Strings.Fixed;
-with Ada.Unchecked_Conversion;
 with Ada.Command_Line;
 
 procedure Day14 is
@@ -9,52 +8,27 @@ procedure Day14 is
     package ASF renames Ada.Strings.Fixed;
 
     subtype Long_Long_Natural is Long_Long_Integer range 0 .. Long_Long_Integer'Last;
-
     subtype Mask_Range is Natural range 1 .. 36;
-    type Bit is mod 2;
-    for Bit'Size use 1;
-    type Bit_Array is array(Mask_Range) of Bit;
-    pragma Pack(Bit_Array);
     type Unsigned is mod 2**Mask_Range'Last;
+    type Unsigned_Array is array(Positive range <>) of Unsigned;
+    type Positive_Array is array(Positive range <>) of Positive;
+    Empty_Array : constant Positive_Array(1 .. 0) := (others => <>);
 
-    package Masks is new Ada.Containers.Ordered_Maps(Mask_Range, Bit);
-    subtype Mask is Masks.Map;
     package Unsigned_Maps is new Ada.Containers.Ordered_Maps(Unsigned, Unsigned);
     subtype Memory is Unsigned_Maps.Map;
 
-    type Positive_Array is array(Positive range <>) of Positive;
-    Empty_Array : constant Positive_Array(1 .. 0) := (others => <>);
-    type Floating_Masks_Array is array(Positive range <>) of Mask;
-
-    function To_Bit_Array is new Ada.Unchecked_Conversion(Unsigned, Bit_Array);
-    function To_Unsigned is new Ada.Unchecked_Conversion(Bit_Array, Unsigned);
-
-    function To_Mask(input : in String) return Mask is
-        M : Mask;
+    function To_Mask(input : in String; filter_in : in Character) return Unsigned is
+        mask : Unsigned := 0;
     begin
         for shift in 0 .. input'Length - 1 loop
-            if input(input'Last - shift) /= 'X' then
-                M.Insert(shift + 1, Bit'Value((1 => input(input'Last - shift))));
+            if input(input'Last - shift) = filter_in then
+                mask := mask + 2 ** shift;
             end if;
         end loop;
-        return M;
+        return mask;
     end To_Mask;
 
-    function Right(L, R : in Bit) return Bit is (R);
-    function Or_Op(L, R : in Bit) return Bit is (L or R);
-
-    function Apply(M : in Mask; target : in Bit_Array; Operator : access function(L, R : in Bit) return Bit) return Bit_Array is
-        output : Bit_Array := target;
-        C : Masks.Cursor := M.First;
-    begin
-        while Masks.Has_Element(C) loop
-            output(Masks.Key(C)) := Operator(output(Masks.Key(C)), Masks.Element(C));
-            Masks.Next(C);
-        end loop;
-        return output;
-    end Apply;
-
-    procedure Make_Alternatives(input : in String; buffer : out Floating_Masks_Array; alternatives : out Natural) is
+    procedure Make_Masks(input : in String; masks_positives, masks_negatives : out Unsigned_Array; alternatives : out Natural) is
         function Make_Indices(index : Positive; accumulator : in Positive_Array) return Positive_Array is
         begin
             if index > input'Last then
@@ -67,29 +41,31 @@ procedure Day14 is
         end Make_Indices;
 
         indices : constant Positive_Array := Make_Indices(input'First, Empty_Array);
-        M_alts : Mask;
+        mask_negative : Unsigned := 0;
+        mask_positive : Unsigned := 0;
 
-        procedure Next(index : in Positive) is
+        procedure Fill(index : in Positive) is
         begin
             if index > indices'Last then
-                buffer(buffer'First + alternatives) := M_alts.Copy;
+                masks_positives(masks_positives'First + alternatives) := mask_positive;
+                masks_negatives(masks_negatives'First + alternatives) := mask_negative;
                 alternatives := alternatives + 1;
             else
-                M_alts.Insert(Mask_Range'Last - indices(index) + 1, 0);
-                Next(index + 1);
-                M_alts.Delete(Mask_Range'Last - indices(index) + 1);
-                M_alts.Insert(Mask_Range'Last - indices(index) + 1, 1);
-                Next(index + 1);
-                M_alts.Delete(Mask_Range'Last - indices(index) + 1);
+                mask_negative := mask_negative + 2 ** (Mask_Range'Last - indices(index));
+                Fill(index + 1);
+                mask_negative := mask_negative - 2 ** (Mask_Range'Last - indices(index));
+                mask_positive := mask_positive + 2 ** (Mask_Range'Last - indices(index));
+                Fill(index + 1);
+                mask_positive := mask_positive - 2 ** (Mask_Range'Last - indices(index));
             end if;
-        end Next;
+        end Fill;
     begin
         alternatives := 0;
-        Next(indices'First);
-    end Make_Alternatives;
+        Fill(indices'First);
+    end Make_Masks;
 
     procedure Part_1(F : in out TIO.File_Type; output : out Long_Long_Natural) is
-        M : Mask;
+        mask_p, m_n, masked : Unsigned;
         address, value : Unsigned;
         mem : Memory;
     begin
@@ -101,11 +77,13 @@ procedure Day14 is
                 space : constant Natural := ASF.Index(line, " ");
             begin
                 if line(line'First .. space - 1) = "mask" then
-                    M := To_Mask(line(space + 3 .. line'Last));
+                    mask_p := To_Mask(line(space + 3 .. line'Last), '1');
+                    m_n := To_Mask(line(space + 3 .. line'Last), '0');
                 else
                     address := Unsigned'Value(line(ASF.Index(line, "[") + 1 .. ASF.Index(line, "]") - 1));
                     value := Unsigned'Value(line(space + 3 .. line'Last));
-                    mem.Include(address, To_Unsigned(Apply(M, To_Bit_Array(value), Right'Access)));
+                    masked := (value or mask_p) and not m_n;
+                    mem.Include(address, masked);
                 end if;
             end;
         end loop;
@@ -125,8 +103,8 @@ procedure Day14 is
             return 2 ** total;
         end Max_Alternatives;
 
-        floating_masks : Floating_Masks_Array(1 .. Max_Alternatives);
-        M : Mask;
+        floating_p, floating_n : Unsigned_Array(1 .. Max_Alternatives);
+        mask_p : Unsigned;
         n_alts : Natural;
         address, value : Unsigned; 
         mem : Memory;
@@ -139,14 +117,14 @@ procedure Day14 is
                 space : constant Natural := ASF.Index(line, " ");
             begin
                 if line(line'First .. space - 1) = "mask" then
-                    M := To_Mask(line(space + 3 .. line'Last));
-                    Make_Alternatives(line(space + 3 .. line'Last), floating_masks, n_alts);
+                    mask_p := To_Mask(line(space + 3 .. line'Last), '1');
+                    Make_Masks(line(space + 3 .. line'Last), floating_p, floating_n, n_alts);
                 else
                     address := Unsigned'Value(line(ASF.Index(line, "[") + 1 .. ASF.Index(line, "]") - 1));
                     value := Unsigned'Value(line(space + 3 .. line'Last));
-                    address := To_Unsigned(Apply(M, To_Bit_Array(address), Or_Op'Access));
+                    address := address or mask_p;
                     for I in 1 .. n_alts loop
-                        mem.Include(To_Unsigned(Apply(floating_masks(I), To_Bit_Array(address), Right'Access)), value);
+                        mem.Include((address or floating_p(I)) and not floating_n(I), value);
                     end loop;
                 end if;
             end;
