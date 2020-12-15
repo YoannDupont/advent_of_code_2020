@@ -1,6 +1,5 @@
 with Ada.Text_IO;
 with Ada.Integer_Text_IO;
-with Ada.Containers.Hashed_Maps;
 with Ada.Command_Line;
 
 procedure Day15 is
@@ -9,11 +8,7 @@ procedure Day15 is
 
     type Natural_Array is array(Positive range <>) of Natural;
     Empty_Array : Constant Natural_Array(1 .. 0) := (others => <>);
-
-    function Hash(N : in Natural) return Ada.Containers.Hash_Type is (Ada.Containers.Hash_Type(N));
-
-    package N2N_Maps is new Ada.Containers.Hashed_Maps(Natural, Natural, Hash, "=", "=");
-    use N2N_Maps;
+    type Memory is array(Natural range <>) of Natural;
 
     function Get(F : in TIO.File_Type) return Natural_Array is
         line : constant String := TIO.Get_Line(F);
@@ -33,20 +28,22 @@ procedure Day15 is
 
     function Play(input : in Natural_Array; nth : in Natural) return Natural is
         most_recently_spoken : Natural := input(input'Last);
-        last_time_spoken : Map;
+        data : Natural_Array(1 .. input'Length) := input;
+        last_time_spoken : access Memory := new Memory(0 .. nth);
         laps : Natural;
     begin
-        for I in input'Range loop
-            last_time_spoken.Include(input(I), I);
+        last_time_spoken.all := (others => 0);
+        for I in data'Range loop
+            last_time_spoken.all(data(I)) := I;
         end loop;
 
-        for I in input'Last + 1 .. input'First + nth - 1 loop
-            if last_time_spoken.Contains(most_recently_spoken) then
-                laps := I - last_time_spoken.Element(most_recently_spoken) - 1;
-                last_time_spoken.Include(most_recently_spoken, I - 1);
+        for I in data'Last + 1 .. nth loop
+            if last_time_spoken.all(most_recently_spoken) /= 0 then
+                laps := I - last_time_spoken.all(most_recently_spoken) - 1;
+                last_time_spoken.all(most_recently_spoken) := I - 1;
                 most_recently_spoken := laps;
             else
-                last_time_spoken.Include(most_recently_spoken, I - 1);
+                last_time_spoken.all(most_recently_spoken) := I - 1;
                 most_recently_spoken := 0;
             end if;
         end loop;
