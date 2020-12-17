@@ -227,8 +227,10 @@ begin
         valids : constant Field_Set_Array := Find_Valids(my_ticket & valid_nearby_tickets, allowed, size);
         p2 : constant Long_Long_Integer := Part_2(my_ticket, valids);
     begin
+        TIO.Put_Line("Consider the validity of the nearby tickets you scanned. What is your ticket scanning error rate?");
         TIO.Put_Line(Part_1(nearby_tickets, allowed)'Img);
         TIO.New_Line;
+        TIO.Put_Line("Once you work out which field is which, look for the six fields on your ticket that start with the word departure. What do you get if you multiply those six values together?");
         TIO.Put_Line(p2'Img);
     end;
     TIO.Close(F);
