@@ -23,5 +23,6 @@ project AOC2020 is
       ("day01.adb", "day02.adb", "day03.adb", "day04.adb", "day05.adb",
        "day06.adb", "day07.adb", "day08.adb", "day09.adb", "day10.adb",
        "day11.adb", "day12.adb", "day13.adb", "day14.adb", "day15.adb",
-       "day16.adb", "day17.adb", "day18.adb", "day19.adb", "day20.adb");
+       "day16.adb", "day17.adb", "day18.adb", "day19.adb", "day20.adb",
+       "day21.adb");
 end AOC2020;
