@@ -39,6 +39,7 @@ begin
     Encrypt(card_encryption_key, card_public_key, door_loop_size);
     Encrypt(door_encryption_key, door_public_key, card_loop_size);
 
+    TIO.Put_Line("What encryption key is the handshake trying to establish?");
     TIO.Put_Line(card_encryption_key'Img);
     TIO.Put_Line(door_encryption_key'Img);
 end Day25;

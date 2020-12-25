@@ -193,9 +193,12 @@ begin
     puzzle_input := Get(F);
     TIO.Close(F);
 
+    TIO.Put_Line("Go through the renovation crew's list and determine which tiles they need to flip. After all of the instructions have been followed, how many tiles are left with the black side up?");
     p1 := Part_1(puzzle_input);
     TIO.Put_Line(p1.Length'Img);
 
+
+    TIO.Put_Line("How many tiles will be black after 100 days?");
     p2 := Part_2(p1, 100);
     TIO.Put_Line(p2.Length'Img);
 end Day24;
