@@ -154,6 +154,8 @@ procedure Day11 is
     filepath : constant String := Ada.Command_Line.Argument(1);
     F : TIO.File_Type;
 begin
+    TIO.Put_Line("--- Day 11: Seating System ---");
+
     TIO.Open(F, TIO.In_File, filepath);
     declare
         G : constant Grid := Get(F);

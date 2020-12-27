@@ -1,8 +1,6 @@
 with Ada.Text_IO;
 with Ada.Long_Long_Integer_Text_IO;
--- with Ada.Integer_Text_IO;
 with Ada.Command_Line;
--- with Ada.Strings.Fixed;
 
 procedure Day13 is
     package TIO renames Ada.Text_IO;
@@ -77,6 +75,8 @@ procedure Day13 is
     F : TIO.File_Type;
     expected_departure : Long_Long_Positive;
 begin
+    TIO.Put_Line("--- Day 13: Shuttle Search ---");
+
     TIO.Open(F, TIO.In_File, filepath);
     LLITIO.Get(F, expected_departure);
     if TIO.End_Of_Line(F) then

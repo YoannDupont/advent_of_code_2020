@@ -146,6 +146,8 @@ procedure Day12 is
     filepath : constant String := Ada.Command_Line.Argument(1);
     file : TIO.File_Type;
 begin
+    TIO.Put_Line("--- Day 12: Rain Risk ---");
+
     TIO.Open(file, TIO.In_File, filepath);
     declare
         actions : constant Action_Array := Get(file);

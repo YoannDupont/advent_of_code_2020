@@ -145,6 +145,8 @@ procedure Day21 is
     filepath : constant String := Ada.Command_Line.Argument(1);
     F : TIO.File_Type;
 begin
+    TIO.Put_Line("--- Day 21: Allergen Assessment ---");
+
     TIO.Open(F, TIO.In_File, filepath);
     declare
         recipes : constant Food_Array := Get(F);

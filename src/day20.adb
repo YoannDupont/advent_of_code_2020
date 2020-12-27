@@ -32,7 +32,7 @@ procedure Day20 is
     type Flip_Orientation is (None, Horizontal, Vertical, L_90, R_90);
     type Flip_Kind is array(1 .. 2) of Flip_Orientation;
     type Flip_Array is array(Positive range <>) of Flip_Kind;
-    Flips : constant Flip_Array(1 .. 11) := (
+    Flips : constant Flip_Array := (
         (None, None),
         (Horizontal, None),
         (Vertical, None),
@@ -41,9 +41,9 @@ procedure Day20 is
         (R_90, None),
         (R_90, R_90),
         (R_90, Horizontal),
-        (L_90, Horizontal),
-        (R_90, Vertical),
-        (L_90, Vertical)
+        (L_90, Horizontal)--,
+        -- (R_90, Vertical),
+        -- (L_90, Vertical)
     );
 
     type Natural_Couple is array (1 .. 2) of Natural;
@@ -337,13 +337,17 @@ procedure Day20 is
         (2, 1), (2, 4), (2, 7), (2, 10), (2, 13), (2, 16)
     );
 begin
+    TIO.Put_Line("--- Day 20: Jurassic Jigsaw ---");
+
     TIO.Open(F, TIO.In_File, filepath);
     declare
         cameras : Camera_Array := Get(F);
         p1 : Long_Long_Integer;
     begin
+        TIO.Put_Line("Assemble the tiles into an image. What do you get if you multiply together the IDs of the four corner tiles?");
         Part_1(cameras, p1);
         TIO.Put_Line(p1'Img);
+        TIO.Put_Line("How many # are not part of a sea monster?");
         TIO.Put_Line(Part_2(Assemble(cameras), dragon)'Img);
     end;
     TIO.Close(F);

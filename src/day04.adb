@@ -153,6 +153,8 @@ procedure Day04 is
     part_1_result : Natural := 0;
     part_2_result : Natural := 0;
 begin
+    TIO.Put_Line("--- Day 4: Passport Processing ---");
+
     TIO.Open(F, TIO.In_File, filepath);
     while not TIO.End_Of_File(F) loop
         Read(F, pass, success);

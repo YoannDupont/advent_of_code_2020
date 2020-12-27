@@ -214,6 +214,8 @@ procedure Day16 is
     size : Natural;
     my_ticket : Ticket;
 begin
+    TIO.Put_Line("--- Day 16: Ticket Translation ---");
+
     TIO.Open(F, TIO.In_File, filepath);
     Get_Ticket_Field_Ranges(F, allowed, size);
     TIO.Skip_Line(F);

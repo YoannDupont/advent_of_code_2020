@@ -1,16 +1,13 @@
 with Ada.Text_IO;
-with Ada.Integer_Text_IO;
 with Ada.Long_Long_Integer_Text_IO;
 with Ada.Command_Line;
 
 procedure Day09 is
     package TIO renames Ada.Text_IO;
-    package ITIO renames Ada.Integer_Text_IO;
     package LLITIO renames Ada.Long_Long_Integer_Text_IO;
 
     type Series_Of_Numbers is array(Positive range <>) of Long_Long_Integer;
     Empty_Series : constant Series_Of_Numbers(1 .. 0) := (others => <>);
-    type Preamble is array(Positive range <>) of Long_Long_Integer;
 
     type Positive_Couple is array(1 .. 2) of Positive;
 
@@ -28,11 +25,11 @@ procedure Day09 is
         return Get_Rec(Empty_Series);
     end Get;
 
-    function Find(P : in Preamble; N : in Long_Long_Integer) return Boolean is
+    function Find(SON : in Series_Of_Numbers; N : in Long_Long_Integer) return Boolean is
     begin
-        for I in P'First .. P'Last - 1 loop
-            for J in I + 1 .. P'Last loop
-                if P(I) + P(J) = N then
+        for I in SON'First .. SON'Last - 1 loop
+            for J in I + 1 .. SON'Last loop
+                if SON(I) + SON(J) = N then
                     return True;
                 end if;
             end loop;
@@ -41,16 +38,16 @@ procedure Day09 is
     end Find;
 
     procedure Part_1(SON : in Series_Of_Numbers; preamble_size : in Positive; index : out Positive; invalid : out Long_Long_Integer) is
-        prmbl : Preamble(1 .. preamble_size) := Preamble(SON(SON'First .. SON'First + preamble_size - 1));
+        preamble : Series_Of_Numbers(1 .. preamble_size) := SON(SON'First .. SON'First + preamble_size - 1);
     begin
         for I in preamble_size + 1 .. SON'Last loop
-            if not Find(prmbl, SON(I)) then
+            if not Find(preamble, SON(I)) then
                 index := I;
                 invalid := SON(I);
                 return;
             end if;
-            prmbl(1 .. preamble_size - 1) := prmbl(2 .. preamble_size);
-            prmbl(preamble_size) := SON(I);
+            preamble(1 .. preamble_size - 1) := preamble(2 .. preamble_size);
+            preamble(preamble_size) := SON(I);
         end loop;
         raise Constraint_Error with "Found no solutions";
     end Part_1;
@@ -111,9 +108,10 @@ procedure Day09 is
     preamble_size : Positive;
     F : TIO.File_Type;
 begin
+    TIO.Put_Line("--- Day 9: Encoding Error ---");
+
     if Ada.Command_Line.Argument_Count < 2 then
-        TIO.Put("Enter preamble size > ");
-        ITIO.Get(TIO.Standard_Input, preamble_size);
+        preamble_size := 25;
     else
         preamble_size := Positive'Value(Ada.Command_Line.Argument(2));
     end if;

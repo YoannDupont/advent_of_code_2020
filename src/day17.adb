@@ -80,12 +80,14 @@ procedure Day17 is
     function Count_Immediate_Neighbours(grid : in Grid4D; n_dims : Dimension) return C2I is
         counts : C2I;
         neighbour : Coordinate;
+        C : Coordinate_To_Integer.Cursor;
     begin
         for coord of grid loop
             for shift of Combinations_With_Replacement(n_dims, -1, 1, False) loop
                 neighbour := coord + shift;
-                if counts.Contains(neighbour) then
-                    counts.Update_Element(counts.Find(neighbour), Increment'Access);
+                C := counts.Find(neighbour);
+                if Coordinate_To_Integer.Has_Element(C) then
+                    counts.Update_Element(C, Increment'Access);
                 else
                     counts.Insert(neighbour, 1);
                 end if;
@@ -117,7 +119,7 @@ procedure Day17 is
     end Next;
 
     function Cycle(G : in Grid4D; n_dims : Dimension) return Grid4D is
-        final : Grid4D := G.Copy;
+        final : Grid4D := G;
     begin
         for I in 1 .. 6 loop
             final := Next(final, n_dims);
@@ -129,6 +131,8 @@ procedure Day17 is
     F : TIO.File_Type;
     grid : Grid4D;
 begin
+    TIO.Put_Line("--- Day 17: Conway Cubes ---");
+
     TIO.Open(F, TIO.In_File, filepath);
     grid := Get(F);
     TIO.Close(F);

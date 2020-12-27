@@ -11,13 +11,13 @@ procedure Day22 is
 
     subtype Card is Positive;
     type Card_Array is array(Positive range <>) of Card;
-    SIZE : constant Positive := 128;
+    SIZE : constant Positive := 64;
     subtype Card_Buffer is Card_Array(1 .. SIZE);
     type Card_Deck is
     record
         buffer : Card_Buffer;
-        first : Positive := SIZE / 2;
-        last : Natural := (SIZE / 2) - 1;
+        first : Positive := SIZE + 1;
+        last : Natural := SIZE;
     end record;
 
     function "="(L, R : in Card_Deck) return Boolean is
@@ -63,23 +63,24 @@ procedure Day22 is
         return CD.buffer(CD.last + 1);
     end Pop;
 
-    procedure Delete_First(CD : in out Card_Deck) is
+    procedure Delete_First(CD : in out Card_Deck; count : Positive := 1) is
     begin
-        if Is_Empty(CD) then
+        if Length(CD) < count then
             raise Constraint_Error;
         end if;
-        CD.first := CD.first + 1;
+        CD.first := CD.first + count;
     end Delete_First;
 
     procedure Prepend(CD : in out Card_Deck; element : in Card) is
+        shift : constant Natural := SIZE - CD.last;
     begin
         if Is_Full(CD) then
             raise Constraint_Error;
         end if;
         if CD.first = CD.buffer'First then
-            CD.buffer(CD.first + 1 .. CD.last + 1) := CD.buffer(CD.first .. CD.last);
-            CD.first := CD.first + 1;
-            CD.last := CD.last + 1;
+            CD.buffer(CD.first + shift .. CD.last + shift) := CD.buffer(CD.first .. CD.last);
+            CD.first := CD.first + shift;
+            CD.last := CD.last + shift;
         end if;
         CD.first := CD.first - 1;
         CD.buffer(CD.first) := element;
@@ -147,12 +148,12 @@ procedure Day22 is
                     r_deck1 : Card_Deck := deck1;
                     r_deck2 : Card_Deck := deck2;
                 begin
-                    while Length(r_deck1) /= card1 loop
-                        Delete_First(r_deck1);
-                    end loop;
-                    while Length(r_deck2) /= card2 loop
-                        Delete_First(r_deck2);
-                    end loop;
+                    if Length(r_deck1) /= card1 then
+                        Delete_First(r_deck1, Length(r_deck1) - card1);
+                    end if;
+                    if Length(r_deck2) /= card2 then
+                        Delete_First(r_deck2, Length(r_deck2) - card2);
+                    end if;
                     Part_2(r_deck1, r_deck2, game_winner, holder);
                 end;
                 if game_winner = 1 then
@@ -193,6 +194,8 @@ procedure Day22 is
     player1, player2, hand : Card_Deck;
     winner : Positive;
 begin
+    TIO.Put_Line("--- Day 22: Crab Combat ---");
+
     TIO.Open(F, TIO.In_File, filepath);
     player1 := Get(F);
     player2 := Get(F);

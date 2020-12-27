@@ -65,6 +65,8 @@ procedure Day10 is
     filepath : constant String := Ada.Command_Line.Argument(1);
     F : TIO.File_Type;
 begin
+    TIO.Put_Line("--- Day 10: Adapter Array ---");
+
     TIO.Open(F, TIO.In_File, filepath);
     declare
         adapters : constant Joltage_Array := Get(F);

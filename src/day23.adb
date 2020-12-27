@@ -102,6 +102,8 @@ procedure Day23 is
     filepath : constant String := Ada.Command_Line.Argument(1);
     F : TIO.File_Type;
 begin
+    TIO.Put_Line("--- Day 23: Crab Cups ---");
+
     TIO.Open(F, TIO.In_File, filepath);
     declare
         CA : constant Cup_Array := Get(F);

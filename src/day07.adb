@@ -1,6 +1,6 @@
 with Ada.Text_IO;
-with Ada.Containers.Hashed_Maps;
-with Ada.Containers.Hashed_Sets;
+with Ada.Containers.Ordered_Maps;
+with Ada.Containers.Ordered_Sets;
 with Ada.Command_Line;
 
 use Ada.Containers;
@@ -25,16 +25,16 @@ procedure Day07 is
         name : Color_Name;
     end Record;
 
-    function Hash(C : Color) return Hash_Type is
+    function "<"(L,R : Color) return Boolean is
     begin
-        return Hash_Type(Color_Shade'Pos(C.shade) * 2 ** 16) + Hash_Type(Color_Name'Pos(C.name));
-    end Hash;
+        return (L.shade < R.shade) or else (L.shade = R.shade and L.name < R.name);
+    end "<";
 
-    package Capacity_Maps is new Hashed_Maps(Color, Natural, Hash, "=", "=");
+    package Capacity_Maps is new Ordered_Maps(Color, Natural);
     subtype Capacity is Capacity_Maps.Map;
-    package Rules_Maps is new Hashed_Maps(Color, Capacity_Maps.Map, Hash, "=", Capacity_Maps."=");
+    package Rules_Maps is new Ordered_Maps(Color, Capacity_Maps.Map, "<", Capacity_Maps."=");
     subtype Rules is Rules_Maps.Map;
-    package Color_Sets is new Hashed_Sets(Color, Hash, "=");
+    package Color_Sets is new Ordered_Sets(Color);
 
     package Shade_IO is new TIO.Enumeration_IO(Color_Shade);
     package Name_IO is new TIO.Enumeration_IO(Color_Name);
@@ -49,9 +49,7 @@ procedure Day07 is
         C.Clear;
         Shade_IO.Get(F, colr.shade);
         Name_IO.Get(F, colr.name);
-        for I in 1 .. 14 loop -- " bags contain "
-            TIO.Get(F, CHR);
-        end loop;
+        TIO.Set_Col(F, TIO.Col(F) + 14); -- " bags contain "
         TIO.Look_Ahead(F, CHR, EOL);
         if CHR = 'n' then -- "no other bags"
             TIO.Skip_Line(F);
@@ -138,6 +136,8 @@ procedure Day07 is
     cap : Capacity;
     rls : Rules;
 begin
+    TIO.Put_Line("--- Day 7: Handy Haversacks ---");
+
     TIO.Open(F, TIO.In_File, filepath);
     while not TIO.End_Of_File(F) loop
         Get(F, colr, cap);

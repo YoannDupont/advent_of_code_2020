@@ -61,6 +61,8 @@ procedure Day06 is
     part_1_sum : Natural := 0;
     part_2_sum : Natural := 0;
 begin
+    TIO.Put_Line("--- Day 6: Custom Customs ---");
+
     TIO.Open(F, TIO.In_File, filepath);
     while not TIO.End_Of_File(F) loop
         part_1_sum := part_1_sum + Count(Form_Group(F, part_1_cmp'Access, All_Noes), True);

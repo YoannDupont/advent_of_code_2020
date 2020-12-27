@@ -66,6 +66,8 @@ procedure Day05 is
     attributed : array(Seat_ID'Range) of Boolean := (others => False);
     my_seat : Seat_ID;
 begin
+    TIO.Put_Line("--- Day 5: Binary Boarding ---");
+
     Ada.Assertions.Assert(Get_ID(Get_Seat(To_Seat_Location("BFFFBBFRRR"))) = 567);
     Ada.Assertions.Assert(Get_ID(Get_Seat(To_Seat_Location("FFFBBBFRRR"))) = 119);
     Ada.Assertions.Assert(Get_ID(Get_Seat(To_Seat_Location("BBFFBBFRLL"))) = 820);

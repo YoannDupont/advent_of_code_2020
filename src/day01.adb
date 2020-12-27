@@ -59,6 +59,8 @@ procedure Day01 is
     File_Name : constant String := Ada.Command_Line.Argument(1);
     F : TIO.File_Type;
 begin
+    TIO.Put_Line("--- Day 1: Report Repair ---");
+
     Ada.Assertions.Assert(Test_1_Output = 514579);
     Ada.Assertions.Assert(Test_2_Output = 241861950);
     

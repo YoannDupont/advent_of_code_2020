@@ -28,8 +28,8 @@ procedure Day15 is
 
     function Play(input : in Natural_Array; nth : in Natural) return Natural is
         most_recently_spoken : Natural := input(input'Last);
-        data : Natural_Array(1 .. input'Length) := input;
-        last_time_spoken : access Memory := new Memory(0 .. nth);
+        data : constant Natural_Array(1 .. input'Length) := input;
+        last_time_spoken : constant access Memory := new Memory(0 .. nth);
         laps : Natural;
     begin
         last_time_spoken.all := (others => 0);
@@ -53,6 +53,8 @@ procedure Day15 is
     filepath : constant String := Ada.Command_Line.Argument(1);
     F : TIO.File_Type;
 begin
+    TIO.Put_Line("--- Day 15: Rambunctious Recitation ---");
+
     TIO.Open(F, TIO.In_File, filepath);
     declare
         input : constant Natural_Array := Get(F);

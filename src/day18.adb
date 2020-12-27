@@ -20,6 +20,22 @@ procedure Day18 is
 
     package Expression_Lists is new Ada.Containers.Vectors(Positive, Token);
     subtype Expression is Expression_Lists.Vector;
+    package Symbol_Vectors is new Ada.Containers.Vectors(Positive, Symbol_Kind);
+    package LLI_Vectors is new Ada.Containers.Vectors(Positive, Long_Long_Integer);
+
+    function Pop(V : in out Symbol_Vectors.Vector) return Symbol_Kind is
+        symbol : constant Symbol_Kind := V.Last_Element;
+    begin
+        V.Delete_Last;
+        return symbol;
+    end Pop;
+
+    function Pop(V : in out LLI_Vectors.Vector) return Long_Long_Integer is
+        value : constant Long_Long_Integer := V.Last_Element;
+    begin
+        V.Delete_Last;
+        return value;
+    end Pop;
 
     type Expression_Array is array(Positive range <>) of Expression;
     Empty_Expression_Array : constant Expression_Array(1 .. 0) := (others => <>);
@@ -66,66 +82,55 @@ procedure Day18 is
     function Evaluate(expr : in Expression; advanced : Boolean) return Long_Long_Integer is
         actual : Expression := expr.Copy;
         function Eval return Long_Long_Integer is
-            ops : array(1 .. Natural(expr.Length)) of Symbol_Kind;
-            last_op : Natural := 0;
-            nums : array(ops'Range) of Long_Long_Integer;
-            last_num : Natural := 0;
+            ops : Symbol_Vectors.Vector;
+            nums : LLI_Vectors.Vector;
         begin
             while not actual.Is_Empty loop
                 case actual.First_Element.kind is
                     when Plus_Op .. Times_Op =>
-                        last_op := last_op + 1;
-                        ops(last_op) := actual.First_Element.kind;
+                        ops.Append(actual.First_Element.kind);
                         actual.Delete_First;
                     when Number =>
-                        last_num := last_num + 1;
-                        nums(last_num) := actual.First_Element.value;
+                        nums.Append(actual.First_Element.value);
                         actual.Delete_First;
                         if advanced then
-                            -- handling + precedence by consuming them immediately
-                            if last_op > 0 and then ops(last_op) = Plus_Op then
-                                nums(last_num - 1) := nums(last_num - 1) + nums(last_num);
-                                last_num := last_num - 1;
-                                last_op := last_op - 1;
+                            -- handling + precedence by consuming tokens immediately
+                            if not ops.Is_Empty and then ops.Last_Element = Plus_Op then
+                                nums.Append(Pop(nums) + Pop(nums));
+                                ops.Delete_Last;
                             end if;
-                        elsif last_num = 2 then
-                            nums(last_num - 1) := To_Op(ops(last_op))(nums(last_num - 1), nums(last_num));
-                            last_num := last_num - 1;
-                            last_op := last_op - 1;
+                        elsif Natural(nums.Length) = 2 then
+                            nums.Append(To_Op(Pop(ops))(Pop(nums), Pop(nums)));
                         end if;
                     when Open_Paren =>
                         actual.Delete_First;
                         if advanced then
-                            last_num := last_num + 1;
-                            nums(last_num) := Eval;
-                            if last_op > 0 and then ops(last_op) = Plus_Op then
-                                nums(last_num - 1) := nums(last_num - 1) + nums(last_num);
-                                last_num := last_num - 1;
-                                last_op := last_op - 1;
+                            nums.Append(Eval);
+                            if not ops.Is_Empty and then ops.Last_Element = Plus_Op then
+                                nums.Append(Pop(nums) + Pop(nums));
+                                ops.Delete_Last;
                             end if;
                         else
-                            if last_num /= 0 then
-                                nums(last_num) := To_Op(ops(last_op))(nums(last_num), Eval);
-                                last_op := last_op - 1;
+                            -- if last_num /= 0 then
+                            if not nums.Is_Empty then
+                                nums.Append(To_Op(Pop(ops))(Pop(nums), Eval));
                             else
-                                last_num := last_num + 1;
-                                nums(last_num) := Eval;
+                                nums.Append(Eval);
                             end if;
                         end if;
                     when Close_Paren =>
                         actual.Delete_First;
                         exit when advanced;
-                        return nums(last_num);
+                        return nums.Last_Element;
                 end case;
             end loop;
             if advanced then -- handle remaining * on the stack
-                while last_op /= 0 loop
-                    nums(last_num - 1) := nums(last_num - 1) * nums(last_num);
-                    last_op := last_op - 1;
-                    last_num := last_num - 1;
+                while not ops.Is_Empty loop
+                    nums.Append(Pop(nums) * Pop(nums));
+                    ops.Delete_Last;
                 end loop;
             end if;
-            return nums(1);
+            return nums.First_Element;
         end Eval;
     begin
         return Eval;
@@ -143,6 +148,8 @@ procedure Day18 is
     filepath : constant String := Ada.Command_Line.Argument(1);
     F : TIO.File_Type;
 begin
+    TIO.Put_Line("--- Day 18: Operation Order ---");
+
     TIO.Open(F, TIO.In_File, filepath);
     declare
         expressions : constant Expression_Array := Get(F);

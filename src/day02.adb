@@ -81,6 +81,8 @@ procedure Day02 is
     filepath : constant String := Ada.Command_Line.Argument(1);
     F : TIO.File_Type;
 begin
+    TIO.Put_Line("--- Day 2: Password Philosophy ---");
+
     Test_Input.Append(((1, 3, 'a'), +"abcde"));
     Test_Input.Append(((1, 3, 'b'), +"cdefg"));
     Test_Input.Append(((2, 9, 'c'), +"ccccccccc"));

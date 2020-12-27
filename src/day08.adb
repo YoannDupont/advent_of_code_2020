@@ -88,6 +88,8 @@ procedure Day08 is
     filepath : constant String := Ada.Command_Line.Argument(1);
     F : TIO.File_Type;
 begin
+    TIO.Put_Line("--- Day 8: Handheld Halting ---");
+
     TIO.Open(F, TIO.In_File, filepath);
     declare
         code : Boot_Code := Read(F);

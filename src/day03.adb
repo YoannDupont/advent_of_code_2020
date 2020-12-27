@@ -61,6 +61,8 @@ procedure Day03 is
     part_1_slope : constant Slope := (3, 1);
     part_2_slopes : constant Slope_Array := ((1, 1), (3, 1), (5, 1), (7, 1), (1, 2));
 begin
+    TIO.Put_Line("--- Day 3: Toboggan Trajectory ---");
+
     test_1_map.Append("..##.......");
     test_1_map.Append("#...#...#..");
     test_1_map.Append(".#....#..#.");

@@ -4,22 +4,24 @@ with Ada.Containers.Ordered_Sets;
 with Ada.Containers.Ordered_Maps;
 with Ada.Containers.Indefinite_Vectors;
 
+use type Ada.Containers.Hash_Type;
+
 procedure Day24 is
     package TIO renames Ada.Text_IO;
 
     type Cardinal is (N, S, E, W, None);
     subtype True_Cardinal is Cardinal range N .. W;
-    type Distance is delta 0.5 range -1000.0 .. 1000.0;
+    type Distance is new Integer;
     type Direction is array(1 .. 2) of Cardinal;
     type Tile is array(1 .. 2) of Distance;
-    Origin : constant Tile := (0.0, 0.0);
+    Origin : constant Tile := (0, 0);
 
     type Direction_Array is array(Positive range <>) of Direction;
     Empty_Direction_Array : constant Direction_Array(1 .. 0) := (others => <>);
     type Tile_Array is array(Positive range <>) of Tile;
 
-    package CAV is new Ada.Containers.Indefinite_Vectors(Positive, Tile_Array);
-    subtype CA_Vector is CAV.Vector;
+    package TAV is new Ada.Containers.Indefinite_Vectors(Positive, Tile_Array);
+    subtype TA_Vector is TAV.Vector;
 
     function "<"(L,R : Tile) return Boolean is
     begin
@@ -32,19 +34,21 @@ procedure Day24 is
     function To_Shift(C : Cardinal) return Distance is
     begin
         case C is
-            when N | E => return 1.0;
-            when S | W => return -1.0;
-            when None => return 0.0;
+            when N | E => return 2;
+            when S | W => return -2;
+            when None => return 0;
         end case;
     end To_Shift;
 
     function To_Tile(D : in Direction) return Tile is
-        C : Tile := (To_Shift(D(1)), To_Shift(D(2)));
-        tot : constant Distance := abs(C(1)) + abs(C(2));
+        C : constant Tile := (To_Shift(D(1)), To_Shift(D(2)));
     begin
-        return (C(1) / tot, C(2) / tot);
+        if C(1) /= 0 then
+            return (C(1), C(2) / 2);
+        else
+            return C;
+        end if;
     end To_Tile;
-    function TC(D : in Direction) return Tile renames To_Tile;
 
     function To_Tiles(DA : in Direction_Array) return Tile_Array is
         CA : Tile_Array(DA'range);
@@ -96,8 +100,8 @@ procedure Day24 is
         return Get_Rec(Empty_Direction_Array);
     end Get;
 
-    function Get(F : in TIO.File_Type) return CA_Vector is
-        result : CA_Vector;
+    function Get(F : in TIO.File_Type) return TA_Vector is
+        result : TA_Vector;
     begin
         while not TIO.End_Of_File(F) loop
             result.Append(To_Tiles(Get(F)));
@@ -114,13 +118,12 @@ procedure Day24 is
         return result;
     end Move;
 
-    function Part_1(moves_vector : in CA_Vector) return Tile_Sets.Set is
-        start : constant Tile := Origin;
+    function Part_1(moves_vector : in TA_Vector) return Tile_Sets.Set is
         blacks : Tile_Sets.Set;
         T : Tile;
     begin
         for arr of moves_vector loop
-            T := Move(start, arr);
+            T := Move(Origin, arr);
             if not blacks.Contains(T) then
                 blacks.Insert(T);
             else
@@ -136,12 +139,12 @@ procedure Day24 is
     end Increment;
 
     function Part_2(start : Tile_Sets.Set; days : Positive) return Tile_Sets.Set is
-        blacks : Tile_Sets.Set := start.Copy;
+        blacks : Tile_Sets.Set := start;
         tmp : Tile_Sets.Set;
-        neighbourhood : constant Tile_Array(1 .. 6) := (
-            TC((None, E)), TC((None, W)),
-            TC((N, E)), TC((N, W)),
-            TC((S, E)), TC((S, W))
+        neighbourhood : constant Tile_Array := (
+            To_Tile((None, E)), To_Tile((None, W)),
+            To_Tile((N, E)), To_Tile((N, W)),
+            To_Tile((S, E)), To_Tile((S, W))
         );
         neighbour : Tile;
         current : Tile;
@@ -154,22 +157,19 @@ procedure Day24 is
             for tl of blacks loop
                 for shift of neighbourhood loop
                     neighbour := tl + shift;
-                    if counts.Contains(neighbour) then
-                        counts.Update_Element(counts.Find(neighbour), Increment'Access);
+                    C := counts.Find(neighbour);
+                    if T2I_Maps.Has_Element(C) then
+                        counts.Update_Element(C, Increment'Access);
                     else
                         counts.Insert(neighbour, 1);
                     end if;
                 end loop;
             end loop;
 
-            tmp.Clear;
             C := counts.First;
             while T2I_Maps.Has_Element(C) loop
                 current := T2I_Maps.Key(C);
                 value := T2I_Maps.Element(C);
-                for shift of neighbourhood loop
-                    neighbour := current + shift;
-                end loop;
                 if blacks.Contains(current) then
                     if value in 1 .. 2 then
                         tmp.Insert(current);
@@ -179,16 +179,19 @@ procedure Day24 is
                 end if;
                 T2I_Maps.Next(C);
             end loop;
-            blacks := tmp.Copy;
+            blacks := tmp;
+            tmp.Clear;
         end loop;
         return blacks;
     end Part_2;
 
     filepath : constant String := Ada.Command_Line.Argument(1);
     F : TIO.File_Type;
-    puzzle_input : CA_Vector;
+    puzzle_input : TA_Vector;
     p1, p2 : Tile_Sets.Set;
 begin
+    TIO.Put_Line("--- Day 24: Lobby Layout ---");
+
     TIO.Open(F, TIO.In_File, filepath);
     puzzle_input := Get(F);
     TIO.Close(F);
@@ -196,7 +199,6 @@ begin
     TIO.Put_Line("Go through the renovation crew's list and determine which tiles they need to flip. After all of the instructions have been followed, how many tiles are left with the black side up?");
     p1 := Part_1(puzzle_input);
     TIO.Put_Line(p1.Length'Img);
-
 
     TIO.Put_Line("How many tiles will be black after 100 days?");
     p2 := Part_2(p1, 100);

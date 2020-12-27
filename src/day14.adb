@@ -65,7 +65,7 @@ procedure Day14 is
     end Make_Masks;
 
     procedure Part_1(F : in out TIO.File_Type; output : out Long_Long_Natural) is
-        mask_p, m_n, masked : Unsigned;
+        mask_p, mask_n, masked : Unsigned;
         address, value : Unsigned;
         mem : Memory;
     begin
@@ -78,11 +78,11 @@ procedure Day14 is
             begin
                 if line(line'First .. space - 1) = "mask" then
                     mask_p := To_Mask(line(space + 3 .. line'Last), '1');
-                    m_n := To_Mask(line(space + 3 .. line'Last), '0');
+                    mask_n := To_Mask(line(space + 3 .. line'Last), '0');
                 else
                     address := Unsigned'Value(line(ASF.Index(line, "[") + 1 .. ASF.Index(line, "]") - 1));
                     value := Unsigned'Value(line(space + 3 .. line'Last));
-                    masked := (value or mask_p) and not m_n;
+                    masked := (value or mask_p) and not mask_n;
                     mem.Include(address, masked);
                 end if;
             end;
@@ -137,6 +137,8 @@ procedure Day14 is
     filepath : constant String := Ada.Command_Line.Argument(1);
     F : TIO.File_Type;
 begin
+    TIO.Put_Line("--- Day 14: Docking Data ---");
+
     TIO.Open(F, TIO.In_File, filepath);
     declare
         p1 : Long_Long_Natural;
